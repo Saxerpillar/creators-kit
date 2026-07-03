@@ -354,9 +354,9 @@ public class CreatorsPlugin extends Plugin implements MouseListener {
 			double cx = client.getCameraFocalPointX();
 			double cy = client.getCameraFocalPointY();
 			double cz = client.getCameraFocalPointZ();
-			client.setCameraFocalPointX(cx + (targetX - cx) * lerpFactor);
-			client.setCameraFocalPointY(cy + (targetY - cy) * lerpFactor);
-			client.setCameraFocalPointZ(cz + (targetZ - cz) * lerpFactor);
+			client.setCameraFocalPointX((float) (cx + (targetX - cx) * lerpFactor));
+			client.setCameraFocalPointY((float) (cy + (targetY - cy) * lerpFactor));
+			client.setCameraFocalPointZ((float) (cz + (targetZ - cz) * lerpFactor));
 		}
 		catch (IllegalArgumentException ex)
 		{
@@ -393,9 +393,9 @@ public class CreatorsPlugin extends Plugin implements MouseListener {
 		}
 		try
 		{
-			client.setCameraFocalPointX(client.getCameraFocalPointX() - prevShakeOffsetX);
-			client.setCameraFocalPointY(client.getCameraFocalPointY() - prevShakeOffsetY);
-			client.setCameraFocalPointZ(client.getCameraFocalPointZ() - prevShakeOffsetZ);
+			client.setCameraFocalPointX((float) (client.getCameraFocalPointX() - prevShakeOffsetX));
+			client.setCameraFocalPointY((float) (client.getCameraFocalPointY() - prevShakeOffsetY));
+			client.setCameraFocalPointZ((float) (client.getCameraFocalPointZ() - prevShakeOffsetZ));
 		}
 		catch (IllegalArgumentException ignored)
 		{
@@ -478,9 +478,9 @@ public class CreatorsPlugin extends Plugin implements MouseListener {
 
 		try
 		{
-			client.setCameraFocalPointX(client.getCameraFocalPointX() + ox);
-			client.setCameraFocalPointY(client.getCameraFocalPointY() + oy);
-			client.setCameraFocalPointZ(client.getCameraFocalPointZ() + oz);
+			client.setCameraFocalPointX((float) (client.getCameraFocalPointX() + ox));
+			client.setCameraFocalPointY((float) (client.getCameraFocalPointY() + oy));
+			client.setCameraFocalPointZ((float) (client.getCameraFocalPointZ() + oz));
 			prevShakeOffsetX = ox;
 			prevShakeOffsetY = oy;
 			prevShakeOffsetZ = oz;
@@ -633,9 +633,9 @@ public class CreatorsPlugin extends Plugin implements MouseListener {
 		}
 		try
 		{
-			client.setCameraFocalPointX(interp.getFocalX());
-			client.setCameraFocalPointY(interp.getFocalY());
-			client.setCameraFocalPointZ(interp.getFocalZ());
+			client.setCameraFocalPointX((float) interp.getFocalX());
+			client.setCameraFocalPointY((float) interp.getFocalY());
+			client.setCameraFocalPointZ((float) interp.getFocalZ());
 			client.setCameraPitchTarget(
 					com.creatorskit.swing.timesheet.keyframe.CameraEase.radiansToJau(interp.getPitch()));
 			client.setCameraYawTarget(
