@@ -27,7 +27,7 @@ public final class CameraEase
         double fromYaw = from.getYaw();
         double toYaw = to.getYaw();
         double yawDeltaJau = radiansToJau(toYaw - fromYaw);
-        if (Math.abs(yawDeltaJau) > 1024)
+        if (Math.abs(yawDeltaJau) > JAU_PER_CIRCLE / 2)
         {
             if (yawDeltaJau > 0) fromYaw += 2 * Math.PI;
             else toYaw += 2 * Math.PI;
@@ -50,10 +50,19 @@ public final class CameraEase
         return a + (b - a) * t;
     }
 
-    private static final double RADIANS_TO_JAU = 2048.0 / (2 * Math.PI);
+    /**
+     * OSRS camera angles are JAU14 -- 2^14 = 16384 units per full circle -- since
+     * the runelite-api camera migration: {@code getCameraYaw()}/{@code getCameraPitch()}
+     * now index {@link net.runelite.api.Perspective#SINE14} (a 16384-entry table), and
+     * {@code setCameraYawTarget}/{@code setCameraPitchTarget} consume the same unit.
+     * The engine previously used JAU11 (2048/circle); a keyframe applied with the old
+     * 2048 factor comes out ~8x under-rotated, snapping the view to the wrong angle.
+     */
+    public static final int JAU_PER_CIRCLE = 16384; // 2^14 (JAU14)
+    private static final double RADIANS_TO_JAU = JAU_PER_CIRCLE / (2 * Math.PI);
     public static int radiansToJau(double radians)
     {
-        return (int) Math.round(radians * RADIANS_TO_JAU) % 2048;
+        return (int) Math.round(radians * RADIANS_TO_JAU) % JAU_PER_CIRCLE;
     }
 
     private static double curve(CameraEaseType ease, double t, CustomEasingCurve customCurve)

@@ -462,10 +462,10 @@ public class CreatorsPlugin extends Plugin implements MouseListener {
 				+ 0.15 * Math.sin(phaseV * 3.7 + 2.1);
 
 		// Camera-relative horizontal: rotate by yaw so horizontalAmp always reads
-		// as screen left/right. OSRS yaw is in JAU (2048 units = full circle).
+		// as screen left/right. OSRS camera yaw is in JAU14 (16384 units = full circle).
 		// cos/sin of yaw give the camera's right-vector projected onto the horizontal
 		// (X/Z focal-point) plane.
-		double yawRadians = client.getCameraYaw() * (2 * Math.PI / 2048.0);
+		double yawRadians = client.getCameraYaw() * (2 * Math.PI / com.creatorskit.swing.timesheet.keyframe.CameraEase.JAU_PER_CIRCLE);
 		double rightCos = Math.cos(yawRadians);
 		double rightSin = Math.sin(yawRadians);
 
@@ -639,7 +639,7 @@ public class CreatorsPlugin extends Plugin implements MouseListener {
 			client.setCameraPitchTarget(
 					com.creatorskit.swing.timesheet.keyframe.CameraEase.radiansToJau(interp.getPitch()));
 			client.setCameraYawTarget(
-					com.creatorskit.swing.timesheet.keyframe.CameraEase.radiansToJau(interp.getYaw()) % 2047);
+					com.creatorskit.swing.timesheet.keyframe.CameraEase.radiansToJau(interp.getYaw()));
 			client.runScript(ScriptID.CAMERA_DO_ZOOM, interp.getScale(), interp.getScale());
 		}
 		catch (IllegalArgumentException ignored)
