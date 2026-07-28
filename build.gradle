@@ -51,3 +51,17 @@ task createProperties(dependsOn: processResources) {
 classes {
 	dependsOn createProperties
 }
+
+// Launches the RuneLite test client with the plugin loaded from source -- the
+// same thing as IntelliJ's CreatorsPluginTest run configuration, but from the
+// command line (see run-client.bat). Assertions on like the IDE config: the
+// dev client uses them to enforce client-thread access.
+tasks.register('runClient', JavaExec) {
+	group = 'creators kit'
+	description = 'Run the RuneLite test client with the plugin loaded (no IDE needed)'
+	dependsOn 'testClasses'
+	classpath = sourceSets.test.runtimeClasspath
+	mainClass = 'com.creatorskit.CreatorsPluginTest'
+	enableAssertions = true
+	maxHeapSize = '2g'
+}
