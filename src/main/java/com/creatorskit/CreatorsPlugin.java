@@ -1164,22 +1164,28 @@ public class CreatorsPlugin extends Plugin implements MouseListener {
 			addProgramStep();
 		}
 
+		// Camera angles are JAU14 (16384/circle) since the runelite-api migration, but the
+		// rotate-speed config is tuned in the old JAU11 (2048/circle) scale -- multiply the
+		// per-tick delta by 16384/2048 = 8 so the configured speed keeps its original feel.
+		final int yawStep = config.rotateHorizontalSpeed() * 8;
+		final int pitchStep = config.rotateVerticalSpeed() * 8;
+
 		switch (autoRotateYaw)
 		{
 			case LEFT:
-				client.setCameraYawTarget(client.getCameraYaw() - config.rotateHorizontalSpeed());
+				client.setCameraYawTarget(client.getCameraYaw() - yawStep);
 				break;
 			case RIGHT:
-				client.setCameraYawTarget(client.getCameraYaw() + config.rotateHorizontalSpeed());
+				client.setCameraYawTarget(client.getCameraYaw() + yawStep);
 		}
 
 		switch (autoRotatePitch)
 		{
 			case UP:
-				client.setCameraPitchTarget(client.getCameraPitch() + config.rotateVerticalSpeed());
+				client.setCameraPitchTarget(client.getCameraPitch() + pitchStep);
 				break;
 			case DOWN:
-				client.setCameraPitchTarget(client.getCameraPitch() - config.rotateVerticalSpeed());
+				client.setCameraPitchTarget(client.getCameraPitch() - pitchStep);
 		}
 	}
 

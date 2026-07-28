@@ -133,6 +133,12 @@ public enum Rotation
 
     public static int getJagexDegrees(double x, double y, int yaw, double pitch)
     {
+        // yaw is the live CAMERA yaw, which is JAU14 (16384 units/circle) since the
+        // runelite-api migration; object orientation (roundRotation/convertRotation) is
+        // JAU11 (2048/circle). Scale the camera yaw down by 16384/2048 = 8 first, else
+        // roundRotation lands ~8x off and the dragged facing is wrong. (pitch is unused.)
+        yaw = Math.round(yaw / 8f);
+
         double degrees = Math.abs((Math.atan(y / x)) * 180 / Math.PI);
         int jagexDegree = Rotation.convertRotation(x, y, degrees) - (Rotation.roundRotation(yaw));
         while (jagexDegree >= 2048)
