@@ -12,14 +12,14 @@ import net.runelite.api.Model;
  * envelope start -- killed animations because the merged Model carries no
  * bone / animation data for {@code animationController.animate} to read.
  *
- * <p>This pattern dodges that by cloning the POST-animation frame instead,
- * the same way {@link com.creatorskit.ProjectileCKObject} clones for pitch.
- * The animation pipeline still runs against the engine-owned baseModel
- * (full bone data intact), then we deep-copy the resulting one-frame
- * mesh via {@code client.mergeModels(new Model[]{animatedFrame}, 1)} and
- * mutate the clone's face-colour arrays. The mutation never touches the
- * shared baseModel, so other Characters pointing at the same Model see
- * nothing.
+ * <p>This pattern dodges that by tinting the POST-animation frame instead,
+ * the same way {@link com.creatorskit.ProjectileCKObject} handles pitch.
+ * RuneLite 1.13 removed the rendered-model copy API, so
+ * {@link com.creatorskit.CKObject#ensurePrivateBaseModel()} rebuilds a
+ * privately owned base from the unlit source first. The animation pipeline
+ * still runs against that base (full bone data intact), and the animated
+ * frame's colour arrays belong to this CKObject, so writing them cannot leak
+ * to other Characters pointing at the original Model.
  *
  * <p>Pristine face-colour baselines are captured once by the controller
  * at envelope activation (from {@code baseModel.getFaceColors1/2/3}) and
@@ -84,7 +84,11 @@ public class ColourTint
         if (client == null || animatedFrame == null) return null;
         if (pristineFc1 == null || t <= 0) return null;  // no tint to apply
 
-        Model owned = client.mergeModels(new Model[]{animatedFrame}, 1);
+        // RuneLite 1.13 removed mergeModels(Model...). getModel() only installs
+        // this tint after CKObject.ensurePrivateBaseModel() succeeded, so the
+        // animated frame's colour arrays belong to this CKObject's private base
+        // (applyTransformations shares non-vertex fields with its source).
+        Model owned = client.applyTransformations(animatedFrame, null, 0, null, 0);
         if (owned == null) return null;
 
         int[] fc1 = owned.getFaceColors1();

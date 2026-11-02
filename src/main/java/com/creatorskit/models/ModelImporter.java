@@ -317,6 +317,14 @@ public class ModelImporter
                 lightingStyle.getZ() * -1,
                 lightingStyle.getY());
 
+        // Vertex-colour imports mutate the already-lit Model below, so the
+        // unlit source would not reproduce them. Only register builds that can
+        // be recreated faithfully.
+        if (!blenderModel.isUseVertexColours())
+        {
+            ModelSources.register(model, modelData, lightingStyle);
+        }
+
         if (blenderModel.isUseVertexColours())
         {
             double[][] vertexColours = blenderModel.getVertexColours();

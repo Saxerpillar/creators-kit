@@ -572,6 +572,7 @@ public class ModelGetter
 
                 int anim = dataFinder.getLastAnim();
                 Model model = modelData.light(lighting.getAmbient(), lighting.getContrast(), lighting.getX(), lighting.getZ() * -1, lighting.getY());
+                ModelSources.register(model, modelData, lighting);
                 CustomModel customModel = new CustomModel(model, comp);
                 modelUtilities.addCustomModel(customModel, false);
                 plugin.sendChatMessage("Model stored: " + name + "; Anim: " + anim + "; Ambient/Contrast: " + lighting.getAmbient() + "/" + lighting.getContrast());

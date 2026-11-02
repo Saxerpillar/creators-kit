@@ -74,6 +74,8 @@ public class ModelUtilities
         if (model == null)
             return null;
 
+        ModelSources.register(model, modelData, finalLighting);
+
         if (setPriority)
         {
             byte[] renderPriorities = model.getFaceRenderPriorities();
@@ -454,12 +456,23 @@ public class ModelUtilities
     public Model constructModelFromCache(ModelStats[] modelStatsArray, int[] kitRecolours, boolean player, LightingStyle ls, CustomLighting cl)
     {
         ModelData md = constructModelDataFromCache(modelStatsArray, kitRecolours, player);
+
+        // Keep the unlit, merged source so per-CKObject effects can rebuild a
+        // private lit model after RuneLite 1.13 removed rendered-model copying.
+        ModelData merged = client.mergeModels(md);
+        Model model;
         if (ls == LightingStyle.CUSTOM)
         {
-            return client.mergeModels(md).light(cl.getAmbient(), cl.getContrast(), cl.getX(), -cl.getZ(), cl.getY());
+            model = merged.light(cl.getAmbient(), cl.getContrast(), cl.getX(), -cl.getZ(), cl.getY());
+            ModelSources.register(model, merged, cl);
+        }
+        else
+        {
+            model = merged.light(ls.getAmbient(), ls.getContrast(), ls.getX(), -ls.getZ(), ls.getY());
+            ModelSources.register(model, merged, ls);
         }
 
-        return client.mergeModels(md).light(ls.getAmbient(), ls.getContrast(), ls.getX(), -ls.getZ(), ls.getY());
+        return model;
     }
 
     public ModelData constructModelDataFromCache(ModelStats[] modelStatsArray, int[] kitRecolours, boolean player)

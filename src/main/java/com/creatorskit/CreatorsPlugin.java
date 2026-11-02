@@ -1903,12 +1903,12 @@ public class CreatorsPlugin extends Plugin implements MouseListener {
 			if (modelMode)
 			{
 				CustomModel customModel = character.getStoredModel();
-				Model model = customModel == null ? client.loadModel(GOLDEN_CHIN) : customModel.getModel();
+				Model model = customModel == null ? ModelSources.loadCacheModel(client, GOLDEN_CHIN) : customModel.getModel();
 				ckObject.setModel(model);
 				return;
 			}
 
-			Model model = client.loadModel(modelId);
+			Model model = ModelSources.loadCacheModel(client, modelId);
 			ckObject.setModel(model);
 		});
 	}

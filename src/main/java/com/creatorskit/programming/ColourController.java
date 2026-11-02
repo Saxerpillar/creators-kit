@@ -14,13 +14,14 @@ import java.util.Map;
 /**
  * Per-Character lifecycle for {@link ColourKeyFrame}s.
  *
- * <p>The controller doesn't mutate any Model directly. Instead it installs
- * a {@link ColourTint} on each affected CKObject and updates the tint's
- * pristine baseline + per-tick blend factor. {@link CKObject#getModel}
- * then routes its post-animation output through the tint, which deep-
- * copies the per-frame animated mesh via {@code client.mergeModels} and
- * mutates the clone's face colours. This dodges two problems the earlier
- * "replace baseModel with a merged clone" approach had:
+ * <p>The controller doesn't mutate any shared Model directly. Instead it
+ * installs a {@link ColourTint} on each affected CKObject and updates the
+ * tint's pristine baseline + per-tick blend factor. It first asks the
+ * CKObject to rebuild a privately owned base from its unlit source
+ * ({@link CKObject#ensurePrivateBaseModel()}); {@link CKObject#getModel}
+ * then routes the post-animation output through the tint, which writes the
+ * blended face colours into that private frame. This dodges two problems the
+ * earlier "replace baseModel with a merged clone" approach had:
  *
  * <ul>
  *   <li><b>Animation freeze:</b> the merged clone carries no bone data,
@@ -192,6 +193,15 @@ public class ColourController
             // tick 0 and the manager-defined model is still mid-load.
             return existing;
         }
+
+        // RuneLite 1.13 has no rendered-Model clone API. Rebuild a private
+        // base from the unlit source so tinting its face colours cannot leak
+        // to other Characters sharing the original Model.
+        if (!ck.ensurePrivateBaseModel())
+        {
+            return existing;
+        }
+        current = ck.getBaseModel();
 
         Slot slot = existing;
         if (slot == null)

@@ -1,5 +1,6 @@
 package com.creatorskit;
 
+import com.creatorskit.models.ModelSources;
 import com.creatorskit.programming.AnimationType;
 import com.creatorskit.programming.CKAnimationController;
 import lombok.Getter;
@@ -15,6 +16,13 @@ public class CKObject extends RuneLiteObjectController
 {
     private final Client client;
     private Model baseModel;
+    /**
+     * Unlit source data for {@link #baseModel}, when known. Used to rebuild a
+     * privately owned base before per-CKObject colour/pitch mutations --
+     * RuneLite 1.13 has no rendered-Model copy API.
+     */
+    private ModelSources.Source baseModelSource;
+    private boolean baseModelPrivate;
     private boolean freeze;
     private boolean playing;
     private boolean hasAnimKeyFrame;
@@ -105,7 +113,14 @@ public class CKObject extends RuneLiteObjectController
 
     public void setModel(Model baseModel)
     {
+        setBaseModel(baseModel, ModelSources.get(baseModel), false);
+    }
+
+    private void setBaseModel(Model baseModel, ModelSources.Source source, boolean privateCopy)
+    {
         this.baseModel = baseModel;
+        this.baseModelSource = source;
+        this.baseModelPrivate = privateCopy;
         if (baseModel == null)
         {
             this.baseVerticesSnapshot = null;
@@ -132,6 +147,34 @@ public class CKObject extends RuneLiteObjectController
             }
             this.baseVerticesSnapshot = new float[][]{vx.clone(), vy.clone(), vz.clone()};
         }
+    }
+
+    /**
+     * Rebuilds {@link #baseModel} as a privately owned Model when its unlit
+     * source is known. Per-CKObject colour/pitch mutations are only safe on a
+     * private base, since the shared model may be used by other Characters.
+     *
+     * @return true when {@link #baseModel} is privately owned
+     */
+    public boolean ensurePrivateBaseModel()
+    {
+        if (baseModelPrivate)
+        {
+            return true;
+        }
+        if (baseModel == null || baseModelSource == null)
+        {
+            return false;
+        }
+
+        Model copy = baseModelSource.createModel(client);
+        if (copy == null)
+        {
+            return false;
+        }
+
+        setBaseModel(copy, baseModelSource, true);
+        return true;
     }
 
     @Override
@@ -399,14 +442,14 @@ public class CKObject extends RuneLiteObjectController
     /**
      * Per-CKObject colour tint, set by ColourController during a Colour
      * keyframe envelope and cleared on envelope end. When non-null,
-     * {@link #getModel} routes its post-animation output through the
-     * tint -- the tint clones the animated frame via {@code mergeModels}
-     * and writes a per-face HSL blend into the clone, so the mutation
-     * doesn't leak to other Characters sharing the same baseModel.
+     * {@link #getModel} routes its post-animation output through the tint,
+     * which writes a per-face HSL blend into the frame. The controller first
+     * calls {@link #ensurePrivateBaseModel()} so those colour arrays belong to
+     * this CKObject and cannot leak to other Characters sharing the original
+     * Model.
      *
-     * <p>Same idea as ProjectileCKObject's pitch hook (which deep-copies
-     * the animated frame to apply pitch without disturbing the shared
-     * baseModel) -- just for colour instead of geometry.
+     * <p>Same idea as ProjectileCKObject's pitch hook -- just for colour
+     * instead of geometry.
      */
     @Setter
     @Getter
@@ -414,9 +457,8 @@ public class CKObject extends RuneLiteObjectController
 
     /**
      * Returns {@code raw} unchanged when no tint is active, otherwise the
-     * tint's per-frame deep-copy with the lerped face colours applied.
-     * Always safe to call -- null tint or null model both short-circuit
-     * to the raw input.
+     * tint's per-frame model with the lerped face colours applied. Always safe
+     * to call -- null tint or null model both short-circuit to the raw input.
      */
     private Model applyColourTintIfAny(Model raw)
     {

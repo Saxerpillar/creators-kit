@@ -2686,7 +2686,7 @@ public class Programmer
             CustomModel customModel = modelKeyFrame.getCustomModel();
             if (customModel == null)
             {
-                clientThread.invokeLater(() -> ckObject.setModel(client.loadModel(GOLDEN_CHIN)));
+                clientThread.invokeLater(() -> ckObject.setModel(ModelSources.loadCacheModel(client, GOLDEN_CHIN)));
                 return;
             }
 
@@ -2708,7 +2708,7 @@ public class Programmer
 
             final int id = modelId;
 
-            clientThread.invokeLater(() -> ckObject.setModel(client.loadModel(id)));
+            clientThread.invokeLater(() -> ckObject.setModel(ModelSources.loadCacheModel(client, id)));
         }
     }
 
